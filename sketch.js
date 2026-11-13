@@ -2,470 +2,257 @@ let circles = [];
 let squares = [];
 let rays = [];
 let loops = [];
-let details = [];
 
-let artwork;
-
-let blue;
-let pink;
-let yellow;
-
-let downloadButton;
-
-const PAPER = "#D9C9E8";
-
-const COLORS = [
-  "#593833",
-  "#d88180",
-  "#f7b1b0",
-  "#cad182",
-  "#73a580",
-  "#da627d",
-  "#99d98c",
-  "#fffbcc"
+let colors = [
+  "#caf0f8",
+  "#48cae4",
+  "#0096c7",
+  "#0077b6",
+  "#023e8a",
+  "#03045e",
+  "#ade8f4",
+  "#33415c"
 ];
 
-let dotType = "line";
-let dotSpacing = 5;
-
-let angles = [15, 75, 0];
-
-let lastUpdate = -999;
-let updateInterval = 10;
-
-
 function setup() {
-
   createCanvas(900, 1200);
-  pixelDensity(1);
-
-  artwork = createGraphics(width, height);
-  artwork.pixelDensity(1);
-
-  blue = new Riso("fluorescentpink");
-  pink = new Riso("yellow");
-  yellow = new Riso("blue");
-
+  pixelDensity(2);
   generateArt();
-
-  downloadButton = createButton("↓ Download Poster");
-
-  downloadButton.position(20, 20);
-
-  downloadButton.style("font-family", "DM Mono, monospace");
-  downloadButton.style("font-size", "12px");
-  downloadButton.style("padding", "10px 14px");
-  downloadButton.style("border", "1px solid #33415c");
-  downloadButton.style("background", "#F4EAF3");
-  downloadButton.style("color", "#30394dff");
-  downloadButton.style("cursor", "pointer");
-
-  downloadButton.mousePressed(() => {
-    saveCanvas("daydream-drift-riso", "png");
-  });
-
 }
 
-
-// GENERATE ART
 function generateArt() {
-
-  randomSeed(floor(random(100000)));
-  noiseSeed(floor(random(100000)));
+  randomSeed(floor(random(10000)));
+  noiseSeed(floor(random(10000)));
 
   circles = [];
   squares = [];
   rays = [];
   loops = [];
-  details = [];
 
-  // CIRCLES
   for (let i = 0; i < 100; i++) {
-
     circles.push({
       x: random(width),
       y: random(height),
       r: random(8, 65),
-      c: random(COLORS),
-      alpha: random(120, 205),
-      seed: random(1000)
+      c: random(colors),
+      alpha: random(80, 180)
     });
-
   }
 
-  // SQUARES
   for (let i = 0; i < 65; i++) {
-
     squares.push({
       x: random(width),
       y: random(height),
       w: random(30, 160),
       h: random(30, 120),
-      c: random(COLORS),
-      seed: random(1000)
+      c: random(colors)
     });
-
   }
 
-  // RADIAL BURSTS
-  for (let i = 0; i < 2; i++) {
-
-    let burst = {
+  for (let i = 0; i < 0.3; i++) {
+    rays.push({
       x: random(200, 700),
       y: random(300, 900),
-      count: floor(random(35, 80)),
-      rotation: random(TWO_PI),
-      lengths: [],
-      colors: []
-    };
-
-    for (let j = 0; j < burst.count; j++) {
-
-      burst.lengths.push(random(350, 850));
-      burst.colors.push(random(COLORS));
-
-    }
-
-    rays.push(burst);
-
+      count: random(35, 80)
+    });
   }
 
-  // CONCENTRIC LOOPS
   for (let i = 0; i < 14; i++) {
-
     loops.push({
       x: random(width),
       y: random(height),
       size: random(40, 130),
       count: floor(random(8, 20)),
-      c: random(COLORS),
+      c: random(colors),
       rotation: random(TWO_PI)
     });
-
   }
-
-  // SMALL DETAILS
-  for (let i = 0; i < 80; i++) {
-
-    details.push({
-      x: random(width),
-      y: random(height),
-      size: random(2, 9),
-      c: random(COLORS)
-    });
-
-  }
-
-  lastUpdate = -999;
-
 }
-
 
 function draw() {
+  background("#D9C9E8");
 
-  artwork.background(255);
-
-  drawGrid(artwork);
-  drawSquares(artwork);
-  drawRays(artwork);
-  drawLoops(artwork);
-  drawCircles(artwork);
-  drawDetails(artwork);
-  drawGrain(artwork);
-
-  if (frameCount - lastUpdate >= updateInterval) {
-
-    applyRiso();
-
-    lastUpdate = frameCount;
-
-  }
-
-  background(PAPER);
-
-  drawRiso();
-
+  drawGrid();
+  drawSquares();
+  drawRays();
+  drawLoops();
+  drawCircles();
+  drawDetails();
+  drawGrain();
 }
 
-
-function drawGrid(g) {
-
-  g.push();
-
-  g.noFill();
-  g.stroke(80, 65, 120, 35);
-  g.strokeWeight(1);
+function drawGrid() {
+  stroke(80, 65, 120, 35);
+  strokeWeight(1);
 
   for (let x = 0; x < width; x += 35) {
-    g.line(x, 0, x, height);
+    line(x, 0, x, height);
   }
 
   for (let y = 0; y < height; y += 35) {
-    g.line(0, y, width, y);
+    line(0, y, width, y);
   }
-
-  g.pop();
-
 }
 
-
-function drawSquares(g) {
-
+function drawSquares() {
   for (let s of squares) {
+    let movement = noise(
+      s.x * 0.002,
+      s.y * 0.002,
+      frameCount * 0.002
+    ) * 18;
 
-    let movement =
-      noise(s.seed, frameCount * 0.002) * 18;
+    noStroke();
+    fill(s.c + "55");
 
-    g.push();
-
-    g.noStroke();
-    g.fill(s.c);
-
-    g.rect(
+    rect(
       s.x,
       s.y + movement,
       s.w,
       s.h
     );
 
-    g.noFill();
-    g.stroke(s.c);
-    g.strokeWeight(1.2);
+    noFill();
+    stroke(s.c);
+    strokeWeight(1.2);
 
-    g.rect(
+    rect(
       s.x,
       s.y + movement,
       s.w,
       s.h
     );
-
-    g.pop();
-
   }
-
 }
 
-
-function drawRays(g) {
-
+function drawRays() {
   for (let burst of rays) {
-
-    let rotation =
-      burst.rotation + frameCount * 0.0002;
+    let rotation = frameCount * 0.000002;
 
     for (let i = 0; i < burst.count; i++) {
-
       let angle =
         (TWO_PI / burst.count) * i + rotation;
 
-      let rayLength = burst.lengths[i];
+      let length = random(350, 850);
 
-      let x2 =
-        burst.x + cos(angle) * rayLength;
+      let x2 = burst.x + cos(angle) * length;
+      let y2 = burst.y + sin(angle) * length;
 
-      let y2 =
-        burst.y + sin(angle) * rayLength;
-
-      g.stroke(burst.colors[i]);
-      g.strokeWeight(1);
-
-      g.line(
-        burst.x,
-        burst.y,
-        x2,
-        y2
-      );
-
+      stroke(random(colors));
+      strokeWeight(random(0.5, 1.5));
+      line(burst.x, burst.y, x2, y2);
     }
-
   }
-
 }
 
-
-function drawLoops(g) {
-
+function drawLoops() {
   for (let l of loops) {
+    push();
+    translate(l.x, l.y);
+    rotate(l.rotation + frameCount * 0.001);
 
-    g.push();
-
-    g.translate(l.x, l.y);
-
-    g.rotate(
-      l.rotation + frameCount * 0.001
-    );
-
-    g.noFill();
+    noFill();
 
     for (let i = 0; i < l.count; i++) {
-
       let size = l.size + i * 7;
 
-      g.stroke(l.c);
-      g.strokeWeight(1.1);
+      stroke(l.c + "99");
+      strokeWeight(1.1);
 
-      g.ellipse(
+      ellipse(
         0,
         0,
         size,
         size * 0.85
       );
-
     }
 
-    g.pop();
-
+    pop();
   }
-
 }
 
-
-function drawCircles(g) {
-
+function drawCircles() {
   for (let c of circles) {
+    let wobble = noise(
+      c.x * 0.01,
+      c.y * 0.01,
+      frameCount * 0.005
+    ) * 15;
 
-    let wobble =
-      noise(c.seed, frameCount * 0.005) * 15;
+    noStroke();
+    fill(c.c + "AA");
 
-    g.push();
-
-    g.noStroke();
-    g.fill(c.c);
-
-    g.circle(
+    circle(
       c.x + wobble,
       c.y,
       c.r * 2
     );
 
-    g.noFill();
-    g.stroke(c.c);
-    g.strokeWeight(1);
+    noFill();
+    stroke(c.c);
+    strokeWeight(1);
 
-    g.circle(
+    circle(
       c.x + wobble,
       c.y,
       c.r * 2
     );
-
-    g.pop();
-
   }
-
 }
 
+function drawDetails() {
+  for (let i = 0; i < 80; i++) {
+    let x = (i * 127) % width;
+    let y = (i * 193) % height;
 
-function drawDetails(g) {
+    let size = 2 + noise(
+      i,
+      frameCount * 0.02
+    ) * 7;
 
-  for (let d of details) {
+    noStroke();
+    fill(random(colors) + "BB");
 
-    g.noStroke();
-    g.fill(d.c);
-
-    g.circle(
-      d.x,
-      d.y,
-      d.size
-    );
-
+    circle(x, y, size);
   }
-
 }
-
-
-function drawGrain(g) {
-
-  g.push();
-
-  g.noStroke();
-
-  for (let i = 0; i < 500; i++) {
-
-    let x = (i * 197.3 + 31) % width;
-    let y = (i * 113.7 + 17) % height;
-
-    g.fill(i % 2 === 0 ? "#5b335cff" : "#f7caf8ff");
-
-    g.circle(
-      x,
-      y,
-      0.8 + (i % 3) * 0.5
-    );
-
-  }
-
-  g.pop();
-
-}
-
-
-
-function applyRiso() {
-
-  clearRiso();
-
-  let original = artwork.get();
-
-  let separated = extractMappedChannels(
-    original,
-    0.1,
-    true
-  );
-
-  let inks = [
-    blue,
-    pink,
-    yellow
-  ];
-
-  for (let i = 0; i < inks.length; i++) {
-
-    let halftoned = halftoneImage(
-      separated[i],
-      dotType,
-      dotSpacing,
-      angles[i],
-      90
-    );
-
-    inks[i].image(halftoned, 0, 0);
-
-  }
-
-}
-
 
 function mousePressed() {
-
-  if (
-    mouseX >= 0 &&
-    mouseX <= width &&
-    mouseY >= 0 &&
-    mouseY <= height
-  ) {
-
-    generateArt();
-
-  }
-
+  generateArt();
 }
 
-
 function keyPressed() {
-
   if (key === "s" || key === "S") {
+    saveCanvas("abstract-generative-poster", "png");
+  }
+}
 
-    saveCanvas(
-      "daydream-drift-riso",
-      "png"
-    );
+let downloadButton;
 
+function setup() {
+  createCanvas(900, 1200);
+  pixelDensity(2);
+  generateArt();
+
+  downloadButton = createButton("↓ Download Poster");
+  downloadButton.position(20, 20);
+  downloadButton.mousePressed(() => {
+    saveCanvas("my-generative-poster", "png");
+  });
+}
+
+function drawGrain() {
+  loadPixels();
+
+  for (let i = 0; i < pixels.length; i += 4) {
+    let grain = random(-22, 22);
+
+    pixels[i] += grain;
+    pixels[i + 1] += grain;
+    pixels[i + 2] += grain;
+
+    pixels[i + 3] = 255;
   }
 
-  if (key === "e" || key === "E") {
-
-    exportRiso();
-
-  }
-
+  updatePixels();
 }
